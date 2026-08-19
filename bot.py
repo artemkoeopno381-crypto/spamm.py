@@ -5,24 +5,24 @@ import asyncio
 import random
 from .. import loader, utils
 
+
 @loader.tds
 class HardSpamMod(loader.Module):
-    """Hard Spam Module"""
+    """Модуль автоотправки сообщений"""
 
     strings = {"name": "HardSpam"}
 
     def __init__(self):
-        self.config = loader.ModuleConfig()
         self.spam_task = None
 
     async def startspamcmd(self, message):
-        """Запустить отправку сообщений"""
+        """Запустить спам в группу"""
         if self.spam_task and not self.spam_task.done():
-            await utils.answer(message, "⚠️ <b>Спам уже запущен!</b>")
+            await utils.answer(message, "⚠️ <b>Уже запущено!</b>")
             return
 
         chat_id = -1002439987653
-        interval = 180
+        interval = 180  # 3 минуты
 
         phrases = [
             "ты сын тупой шлюхи", "выблядок ебаный", "мать твою в канаве ебали", "сын мертвой бляди", "гнида конченая",
@@ -62,20 +62,23 @@ class HardSpamMod(loader.Module):
         async def spam_loop():
             try:
                 while True:
+                    await asyncio.sleep(interval)
                     phrase = random.choice(phrases)
                     await self._client.send_message(chat_id, phrase)
-                    await asyncio.sleep(interval)
             except asyncio.CancelledError:
                 pass
 
         self.spam_task = asyncio.create_task(spam_loop())
-        await utils.answer(message, "🚀 <b>Запущено!</b>")
+        await utils.answer(
+            message,
+            f"🚀 <b>Запущено в чат {chat_id}!</b>\nИнтервал: {interval} сек.",
+        )
 
     async def stopspamcmd(self, message):
-        """Остановить отправку сообщений"""
+        """Остановить спам"""
         if self.spam_task and not self.spam_task.done():
             self.spam_task.cancel()
             await utils.answer(message, "🛑 <b>Остановлено!</b>")
         else:
-            await utils.answer(message, "❌ <b>Спам не запущен.</b>")
+            await utils.answer(message, "❌ <b>Процесс не запущен.</b>")
             

@@ -1,4 +1,4 @@
-# meta developer: @aaaiaooaaooa
+# meta developer: @your_tag
 # scope: hikka_only
 
 import asyncio
@@ -22,7 +22,7 @@ class HardSpamMod(loader.Module):
             return
 
         chat_id = -1002439987653
-        interval = 67  # Интервал в секундах (3 минуты)
+        interval = 67 # Интервал в секундах (3 минуты)
 
         phrases = [
             "ты сын тупой шлюхи", "выблядок ебаный", "мать твою в канаве ебали", "сын мертвой бляди", "гнида конченая",
@@ -62,7 +62,6 @@ class HardSpamMod(loader.Module):
         async def spam_loop():
             try:
                 while True:
-                    # Получаем участников чата
                     users = []
                     async for user in self._client.iter_participants(chat_id, limit=50):
                         if not user.bot and not user.deleted and not user.is_self:
@@ -72,7 +71,6 @@ class HardSpamMod(loader.Module):
 
                     if users:
                         target = random.choice(users)
-                        # Формируем тег пользователя по кликабельному имени
                         mention = f'<a href="tg://user?id={target.id}">{target.first_name}</a>'
                         text = f"{mention}, {phrase}"
                     else:
@@ -98,3 +96,4 @@ class HardSpamMod(loader.Module):
             await utils.answer(message, "🛑 <b>Остановлено!</b>")
         else:
             await utils.answer(message, "❌ <b>Процесс не запущен.</b>")
+        

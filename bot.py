@@ -1,9 +1,10 @@
+from hikariatama.loader import Loader, Module
 import asyncio
 import random
-from hikariatama.loader import Loader, Module
 
 @Loader.tds
 class HardSpam(Module):
+    """Hard spam module"""
     strings = {"name": "HardSpam"}
 
     def __init__(self):

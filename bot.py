@@ -8,7 +8,7 @@ from .. import loader, utils
 
 @loader.tds
 class HardSpamMod(loader.Module):
-    """Модуль автоотправки сообщений"""
+    """Модуль автоотправки сообщений с тегом участников"""
 
     strings = {"name": "HardSpam"}
 
@@ -16,13 +16,13 @@ class HardSpamMod(loader.Module):
         self.spam_task = None
 
     async def startspamcmd(self, message):
-        """Запустить спам в группу"""
+        """Запустить спам с тегами"""
         if self.spam_task and not self.spam_task.done():
             await utils.answer(message, "⚠️ <b>Уже запущено!</b>")
             return
 
         chat_id = -1002439987653
-        interval = 180  # 3 минуты
+        interval = 67  # Интервал в секундах (3 минуты)
 
         phrases = [
             "ты сын тупой шлюхи", "выблядок ебаный", "мать твою в канаве ебали", "сын мертвой бляди", "гнида конченая",
@@ -54,7 +54,7 @@ class HardSpamMod(loader.Module):
             "жалкое зрелище", "позорище ебаное", "стыд семьи", "разочарование родителей", "грех презерватива",
             "дырявый ебаный", "очкошник тупой", "трус конченый", "ссыкло ебаное", "тряпка половая",
             "половик тупой", "коврик дверной", "подстилка ебаная", "половая тряпка", "шнурок ебаный",
-            "ботинок стоптанный", "носок дырявый", "стелька ебаная", "калоша тупая", "галоша конченая",
+            "ботинок стоптанный", носок дырявый", "стелька ебаная", "калоша тупая", "галоша конченая",
             "прокладка ебаная", "тампакс тупой", "бинт грязный", "пластырь ебаный", "тряпка тупая",
             "тряпка помойная", "поломоина ебаная", "помойная крыса", "грязный ублюдок", "вонючий хуесос"
         ]
@@ -62,16 +62,33 @@ class HardSpamMod(loader.Module):
         async def spam_loop():
             try:
                 while True:
-                    await asyncio.sleep(interval)
+                    # Получаем участников чата
+                    users = []
+                    async for user in self._client.iter_participants(chat_id, limit=50):
+                        if not user.bot and not user.deleted and not user.is_self:
+                            users.append(user)
+
                     phrase = random.choice(phrases)
-                    await self._client.send_message(chat_id, phrase)
+
+                    if users:
+                        target = random.choice(users)
+                        # Формируем тег пользователя по кликабельному имени
+                        mention = f'<a href="tg://user?id={target.id}">{target.first_name}</a>'
+                        text = f"{mention}, {phrase}"
+                    else:
+                        text = phrase
+
+                    await self._client.send_message(chat_id, text, parse_mode="html")
+                    await asyncio.sleep(interval)
             except asyncio.CancelledError:
                 pass
+            except Exception as e:
+                print(f"Ошибка спама: {e}")
 
         self.spam_task = asyncio.create_task(spam_loop())
         await utils.answer(
             message,
-            f"🚀 <b>Запущено в чат {chat_id}!</b>\nИнтервал: {interval} сек.",
+            f"🚀 <b>Авто-теги запущены в чат <code>{chat_id}</code>!</b>",
         )
 
     async def stopspamcmd(self, message):
@@ -81,4 +98,3 @@ class HardSpamMod(loader.Module):
             await utils.answer(message, "🛑 <b>Остановлено!</b>")
         else:
             await utils.answer(message, "❌ <b>Процесс не запущен.</b>")
-            

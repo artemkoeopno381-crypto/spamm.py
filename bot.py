@@ -102,4 +102,4 @@ class HardSpam(Module):
         """Остановить спам"""
         self.spam_active = False
         await message.edit("Спам остановлен.")
-              
+        
